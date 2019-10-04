@@ -1,17 +1,23 @@
 const { createContainer, asClass, asValue, Lifetime } = require('awilix');
-const application = require('../src/Application');
+const application = require('./Application');
 
 module.exports = class NodeBoot {
 
-    constructor() {
+    constructor(initParams) {
         this.container = createContainer();
+        this.appConfig = Object.assign(application, initParams);
     }
 
     start() {
-        this.container.loadModules([
-                'node-boot/**/*.js',
-                'src/**/*.js',
-            ],
+        const { node_boot } = this.appConfig;
+
+        try {
+            this.appConfig = Object.assign(this.appConfig, require('../' + node_boot.application_path));
+        } catch (e) {}
+
+        let modules = [ 'node-boot/**/*.js' ].concat(Object.values(node_boot.modules));
+
+        this.container.loadModules(modules,
             {
                 formatName: 'camelCase',
                 resolverOptions: {
@@ -22,13 +28,13 @@ module.exports = class NodeBoot {
         );
 
         this.container.register({
-            application: asValue(application)
+            application: asValue(this.appConfig)
         });
 
         //Logging config
         const logger = this.container.resolve('logger');
         logger.level = application.logging.level;
 
-        this.container.resolve('nodeWebServer').start();
+        this.container.resolve('expressWebServer').start(this.container);
     }
 };

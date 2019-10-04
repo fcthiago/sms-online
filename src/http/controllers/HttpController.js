@@ -1,14 +1,13 @@
-const { Router } = require('express');
-
 module.exports = class HttpController {
-    constructor ({ logger }) {
-        this.logger = logger
+
+    constructor ({ logger, router }) {
+        this.logger = logger;
+        this.router = router;
     }
 
-    get router () {
-        const router = Router()
-        router.get('/', this.home())
-        return router
+    get route () {
+        this.router.get('/', this.home());
+        return this.router;
     }
 
     home () {
@@ -23,5 +22,4 @@ module.exports = class HttpController {
             }
         }
     }
-
 }
