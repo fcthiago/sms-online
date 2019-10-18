@@ -1,3 +1,5 @@
+const bodyParser = require('body-parser');
+const accessLog = require('morgan');
 const express = require('express');
 
 module.exports = class ExpressWebServer {
@@ -9,10 +11,13 @@ module.exports = class ExpressWebServer {
     }
 
     async start (container) {
+        this.express.use(accessLog('dev'));
+        this.express.use(bodyParser.json());
+
         const { server } = this.application;
         this.routerConfigurator.configure(this.express, container);
         this.express.listen(server.port, () => {
             this.logger.info(`Express WebServer initialized with port: ${server.port}`);
-        })
+        });
     }
 }

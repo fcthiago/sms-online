@@ -1,5 +1,3 @@
-const bodyParser = require('body-parser');
-const accessLog = require('morgan');
 const { listModules } = require('awilix');
 
 module.exports = class RouterConfigurator {
@@ -8,9 +6,6 @@ module.exports = class RouterConfigurator {
     }
 
     configure (express, container) {
-        express.use(accessLog('dev'));
-        express.use(bodyParser.json());
-
         const controllers = listModules(this.modules.controller);
 
         for(const key in controllers) {
