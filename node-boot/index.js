@@ -21,8 +21,7 @@ module.exports = class NodeBoot {
             {
                 formatName: 'camelCase',
                 resolverOptions: {
-                    lifetime: Lifetime.SINGLETON,
-                    register: asClass
+                    lifetime: Lifetime.SINGLETON
                 }
             }
         );

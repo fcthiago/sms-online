@@ -6,7 +6,7 @@ module.exports = class RouterConfigurator {
     }
 
     configure (express, container) {
-        const controllers = listModules(this.modules.controller);
+        const controllers = listModules(this.modules.controllers);
 
         for(const key in controllers) {
             const className = controllers[key].name;
