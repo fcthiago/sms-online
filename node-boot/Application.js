@@ -7,7 +7,8 @@ module.exports = {
     },
     node_boot: {
         modules: {
-            controller: "src/http/controllers/**/*.js"
+            controllers: "src/http/controllers/**/*.js",
+            middlewares: "src/http/middlewares/**/*.js"
         },
         application_path: "src/Application.js"
     }
