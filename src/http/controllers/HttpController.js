@@ -15,7 +15,7 @@ module.exports = class HttpController {
             try {
                 response.json({
                     "status_code": 200,
-                    "message": "Bem vindo ao teste de pipeline!!!!"
+                    "message": "Mais um teste!!!!"
                 }).end()
             } catch (error) {
                 next(error)
