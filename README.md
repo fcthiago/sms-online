@@ -3,3 +3,5 @@
 # Sms Online
 
 Aplicação de exemplo para testes e treinamento
+
+## Rotas
