@@ -9,6 +9,7 @@ module.exports = class ExpressWebServer {
         this.routerConfigurator = routerConfigurator;
         this.middlewareConfigurator = middlewareConfigurator;
         this.express = express();
+        this.server = null;
     }
 
     async start (container) {
@@ -18,8 +19,13 @@ module.exports = class ExpressWebServer {
         const { server } = this.application;
         this.middlewareConfigurator.configure(this.express, container);
         this.routerConfigurator.configure(this.express, container);
-        this.express.listen(server.port, () => {
-            this.logger.info(`Express WebServer initialized with port: ${server.port}`);
+        this.server = this.express.listen(server.port, () => {
+            this.logger.info(`Express WebServer initialized in port: ${server.port}`);
         });
+    }
+
+    async shutdown() {
+        this.logger.info(`Express WebServer shutdown in port: ${this.application.server.port}`);
+        this.server.close();
     }
 }
