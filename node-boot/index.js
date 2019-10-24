@@ -6,6 +6,7 @@ module.exports = class NodeBoot {
     constructor(initParams) {
         this.container = createContainer();
         this.appConfig = Object.assign(application, initParams);
+        this.server = null;
     }
 
     start() {
@@ -34,6 +35,15 @@ module.exports = class NodeBoot {
         const logger = this.container.resolve('logger');
         logger.level = application.logging.level;
 
-        this.container.resolve('expressWebServer').start(this.container);
+        this.server = this.container.resolve('expressWebServer');
+        this.server.start(this.container);
+    }
+
+    shutdown() {
+        this.server.shutdown();
+    }
+
+    configuration() {
+        return this.appConfig;
     }
 };
