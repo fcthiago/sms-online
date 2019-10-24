@@ -21,9 +21,8 @@ describe('GET /', function() {
             .expect('Content-Type', /json/)
             .expect(200)
             .end((err, response) => {
-                if (err) {
-                    return done(err);
-                }
+                if (err) return done(err);
+
                 const doc = response.body;
                 assert.equal(doc.status_code, 200);
                 assert.equal(doc.message, "Testando o pipeline");
