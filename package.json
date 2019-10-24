@@ -1,7 +1,7 @@
 {
   "name": "sms-online",
   "version": "1.0.0",
-  "description": "",
+  "description": "Aplicação de teste e treinamento",
   "main": "index.js",
   "scripts": {
     "test": "./node_modules/.bin/_mocha ./test/**/*Test.js --exit",
