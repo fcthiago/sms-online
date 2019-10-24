@@ -1,10 +1,6 @@
 const { createContainer, asClass, asValue, Lifetime } = require('awilix');
 const application = require('./Application');
 
-const fs = require('fs');
-const path = require('path');
-
-
 module.exports = class NodeBoot {
 
     constructor(initParams) {
@@ -12,7 +8,7 @@ module.exports = class NodeBoot {
         this.appConfig = Object.assign(application, initParams);
     }
 
-    async start() {
+    start() {
         const { node_boot } = this.appConfig;
 
         try {
@@ -37,13 +33,6 @@ module.exports = class NodeBoot {
         //Logging config
         const logger = this.container.resolve('logger');
         logger.level = application.logging.level;
-
-        //Loading extra modules from NodeBoot
-        const modulesFolder = path.join(__dirname, "/module");
-        for (const file of fs.readdirSync(modulesFolder)) {
-            let module = require(require.resolve("./module/"+file));
-            await module(this.container.resolve("application"), this.container, logger);
-        }
 
         this.container.resolve('expressWebServer').start(this.container);
     }
