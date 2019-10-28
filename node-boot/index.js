@@ -25,7 +25,7 @@ module.exports = class NodeBoot {
             {
                 formatName: 'camelCase',
                 resolverOptions: {
-                    lifetime: Lifetime.SINGLETON
+                    lifetime: Lifetime.SINGLETON,
                 }
             }
         );
@@ -34,15 +34,16 @@ module.exports = class NodeBoot {
             application: asValue(this.appConfig)
         });
 
+
         //Logging config
         const logger = this.container.resolve('logger');
         logger.level = application.logging.level;
 
         //Loading extra modules from NodeBoot
-        const modulesFolder = path.join(__dirname, "/module");
+        const modulesFolder = path.join(__dirname, "/modules");
         for (const file of fs.readdirSync(modulesFolder)) {
-            let module = require(require.resolve("./module/"+file));
-            await module(this.container.resolve("application"), this.container, logger);
+            let module = require(require.resolve("./modules/"+file));
+            await module(this.container);
         }
 
         this.container.resolve('expressWebServer').start(this.container);

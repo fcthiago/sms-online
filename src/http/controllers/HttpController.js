@@ -1,8 +1,9 @@
 module.exports = class HttpController {
 
-    constructor ({ logger, router }) {
+    constructor ({ logger, router, rabbitMqAmqpProvider }) {
         this.logger = logger;
         this.router = router;
+        this.rabbitMQAmqpProvider = rabbitMqAmqpProvider;
     }
 
     get route () {
