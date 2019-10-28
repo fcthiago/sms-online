@@ -8,7 +8,7 @@
     "start": "node bin/start.js"
   },
   "keywords": [],
-  "author": "Daniel Medina",
+  "author": "Estagiário",
   "license": "ISC",
   "dependencies": {
     "awilix": "^4.2.2",
