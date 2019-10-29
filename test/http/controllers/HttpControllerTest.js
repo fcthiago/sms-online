@@ -25,6 +25,7 @@ describe('GET /', function() {
 
                 const doc = response.body;
                 assert.equal(doc.status_code, 200);
+                assert.equal(doc.version, "1.0.0");
                 assert.equal(doc.message, "Testando o pipeline");
 
                 return done();
