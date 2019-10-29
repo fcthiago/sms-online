@@ -16,10 +16,10 @@ module.exports = class NodeBoot {
         const { node_boot } = this.appConfig;
 
         try {
-            this.appConfig = Object.assign(this.appConfig, require('../' + node_boot.application_path));
+            this.appConfig = Object.assign(this.appConfig, require('../../' + node_boot.application_path));
         } catch (e) {}
 
-        let modules = [ 'node-boot/**/*.js' ].concat(Object.values(node_boot.modules));
+        let modules = [ path.join(__dirname,'/**/*.js') ].concat(Object.values(node_boot.modules));
 
         this.container.loadModules(modules,
             {

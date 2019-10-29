@@ -1,4 +1,4 @@
-const azure = require("azure");
+const azure = require("azure-sb");
 const {ServiceBusClient, ReceiveMode} = require("@azure/service-bus");
 const ServiceBusHelper = require("../helpers/ServiceBusHelper")
 
@@ -108,12 +108,10 @@ module.exports = class ServiceBusAmqpProvider {
         if (application.amqp.verbose) this.logger.debug("[AzureServiceBus Setup] - Starting...");
         for (const bind of binds) {
             //Checking if Topic exists
-            const {error, gettopicresult, resp} = await ServiceBusHelper.getTopic(serviceBusService, bind.topic.name)
-                .catch((error) => this.logger.error(error));
-            this.errorHandler(error);
+            const {error, gettopicresult, resp} = await ServiceBusHelper.getTopic(serviceBusService, bind.topic.name);
             if (gettopicresult == null) {
                 //Topic Not exist
-                if (application.amqp.verbose) this.logger.debug(`[AzureServiceBus Setup] - [AzureServiceBus Setup] - [${bind.topic.name}] - Topic not exist.`);
+                if (application.amqp.verbose) this.logger.debug(`[AzureServiceBus Setup] - [${bind.topic.name}] - Topic not exist.`);
                 await this.createTopic(serviceBusService, application, bind);
             } else {
                 //Topic Exist
@@ -178,7 +176,7 @@ module.exports = class ServiceBusAmqpProvider {
                     await ServiceBusHelper.deleteRule(serviceBusService,
                         bind.topic.name,
                         subscription.name,
-                        azure.Constants.ServiceBusConstants.DEFAULT_RULE_NAME)
+                        '$Default')
                         .catch((error)=>this.handleError(error));
                 },
                 create: async function () {
