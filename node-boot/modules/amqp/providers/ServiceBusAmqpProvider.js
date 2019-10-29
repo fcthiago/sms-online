@@ -1,4 +1,4 @@
-const azure = require("azure-sb");
+const azure = require("azure");
 const {ServiceBusClient, ReceiveMode} = require("@azure/service-bus");
 const ServiceBusHelper = require("../helpers/ServiceBusHelper")
 
@@ -11,8 +11,8 @@ module.exports = class ServiceBusAmqpProvider {
 
     static checkConfiguration(application) {
         if (application.amqp != null && application.amqp.azure_service_bus != null) {
-            if (application.amqp.azure_service_bus.connection_string == null) {
-                this.logger.warn("Amqp Connection String not set.");
+            if (!application.amqp.azure_service_bus.connection_string) {
+                console.error("[AzureServiceBus Setup] - Amqp Connection String not set.");
                 return false;
             }
             return true;
@@ -101,8 +101,11 @@ module.exports = class ServiceBusAmqpProvider {
     async setupQueues() {
         const {application} = this;
         const binds = application.amqp.azure_service_bus.bindings;
+        let serviceBusService;
 
-        const serviceBusService = azure.createServiceBusService(application.amqp.azure_service_bus.connection_string);
+        serviceBusService = azure.createServiceBusService(application.amqp.azure_service_bus.connection_string);
+
+        if (application.amqp.verbose) this.logger.debug("[AzureServiceBus Setup] - Starting...");
         for (const bind of binds) {
             //Checking if Topic exists
             const {error, gettopicresult, resp} = await ServiceBusHelper.getTopic(serviceBusService, bind.topic.name)
@@ -110,18 +113,19 @@ module.exports = class ServiceBusAmqpProvider {
             this.errorHandler(error);
             if (gettopicresult == null) {
                 //Topic Not exist
-                if (application.amqp.verbose) this.logger.debug(`[${bind.topic.name}] - Topic not exist.`);
+                if (application.amqp.verbose) this.logger.debug(`[AzureServiceBus Setup] - [AzureServiceBus Setup] - [${bind.topic.name}] - Topic not exist.`);
                 await this.createTopic(serviceBusService, application, bind);
             } else {
                 //Topic Exist
-                if (application.amqp.verbose) this.logger.debug(`[${bind.topic.name}] - Topic already exist.`);
-                if (application.amqp.verbose) this.logger.debug(`[${bind.topic.name}] - Deleting Topic...`);
+                if (application.amqp.verbose) this.logger.debug(`[AzureServiceBus Setup] - [${bind.topic.name}] - Topic already exist.`);
+                if (application.amqp.verbose) this.logger.debug(`[AzureServiceBus Setup] - [${bind.topic.name}] - Deleting Topic...`);
                 await ServiceBusHelper.deleteTopic(serviceBusService, bind.topic.name)
                     .catch((error)=> this.logger.error(error));
 
                 await this.createTopic(serviceBusService, application, bind);
             }
         }
+        if (application.amqp.verbose) this.logger.debug("[AzureServiceBus Setup] - Finishing...");
     }
 
 
@@ -132,7 +136,7 @@ module.exports = class ServiceBusAmqpProvider {
      * @param bind
      */
     async createTopic(serviceBusService, application, bind) {
-        if (application.amqp.verbose) this.logger.debug(`[${bind.topic.name}] - Creating Topic...`);
+        if (application.amqp.verbose) this.logger.debug(`[AzureServiceBus Setup] - [${bind.topic.name}] - Creating Topic...`);
         await ServiceBusHelper.createTopicIfNotExists(serviceBusService, bind.topic.name, bind.topic.options)
             .catch((error) => this.logger.error(error));
         for (const subscription of bind.subscriptions) {
@@ -142,12 +146,12 @@ module.exports = class ServiceBusAmqpProvider {
 
             if (getsubscriptionresult == null) {
                 //Queue not exist
-                if (application.amqp.verbose) this.logger.debug(`[${subscription.name}] - Subscription not exist.`);
+                if (application.amqp.verbose) this.logger.debug(`[AzureServiceBus Setup] - [${subscription.name}] - Subscription not exist in topic [${bind.topic.name}].`);
                 await this.createSubscription(serviceBusService, application, bind, subscription);
             } else {
                 //Queue already exist
-                if (application.amqp.verbose) this.logger.debug(`[${subscription.name}] - Subscription already exist.`);
-                if (application.amqp.verbose) this.logger.debug(`[${subscription.name}] - Deleting Subscription...`);
+                if (application.amqp.verbose) this.logger.debug(`[AzureServiceBus Setup] - [${subscription.name}] - Subscription already exist in topic [${bind.topic.name}].`);
+                if (application.amqp.verbose) this.logger.debug(`[AzureServiceBus Setup] - [${subscription.name}] - Deleting Subscription from topic [${bind.topic.name}]...`);
                 ServiceBusHelper.deleteSubscription(serviceBusService, bind.topic.name, subscription.name)
                     .catch((error)=>this.logger.error(error));
 
@@ -163,14 +167,16 @@ module.exports = class ServiceBusAmqpProvider {
      * @param bind
      */
     async createSubscription(serviceBusService, application, bind, subscription) {
-        if (application.amqp.verbose) this.logger.debug(`[${subscription.name}] - Creating Subscription...`);
+        if (application.amqp.verbose) this.logger.debug(`[AzureServiceBus Setup] - [${subscription.name}] - Creating Subscription in topic [${bind.topic.name}]...`);
         await ServiceBusHelper.createSubscription(serviceBusService, bind.topic.name, subscription.name)
             .catch((error) => this.logger.error(error));
 
         if (subscription.routingKey != null) {
+            const {logger} = this;
             const rule = {
                 deleteDefault: async function () {
-                    await ServiceBusHelper.deleteRule(bind.topic.name,
+                    await ServiceBusHelper.deleteRule(serviceBusService,
+                        bind.topic.name,
                         subscription.name,
                         azure.Constants.ServiceBusConstants.DEFAULT_RULE_NAME)
                         .catch((error)=>this.handleError(error));
@@ -180,12 +186,13 @@ module.exports = class ServiceBusAmqpProvider {
                         sqlExpressionFilter: 'sys.label=\'' + subscription.routingKey + '\''
                     };
                     await rule.deleteDefault();
-                    await ServiceBusHelper.createRule(bind.topic.name,
+                    await ServiceBusHelper.createRule(serviceBusService,
+                        bind.topic.name,
                         subscription.name,
                         subscription.routingKey,
                         ruleOptions)
                         .catch((error)=>this.handleError(error));
-                    if (application.amqp.verbose) this.logger.debug(`[${subscription.name}] - bind made wih RoutingKey [${subscription.routingKey}]...`);
+                    if (application.amqp.verbose) logger.debug(`[AzureServiceBus Setup] - [${subscription.name}] - binding wih topic [${bind.topic.name}] with RoutingKey [${subscription.routingKey}]...`);
                 },
                 handleError: function (error) {
                     if (error) {
@@ -199,14 +206,13 @@ module.exports = class ServiceBusAmqpProvider {
 
     errorHandler(error) {
         if (error) {
-            //409 Error means that the subscription already exists
-            if (error.code != 409) {
-                this.logger.error(error);
-                process.exit(500);
-            }
             if (error.code == 404) {
                 this.logger.error(error.detail);
                 this.logger.warn("Try running again the service bus setup.")
+            }
+            if (error.code != 409) {
+                this.logger.error(error);
+                process.exit(500);
             }
         }
     }

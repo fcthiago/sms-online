@@ -68,8 +68,11 @@ module.exports = class ServiceBusHelper {
             serviceBusService.deleteRule(topic,
                 subscription,
                 ruleName,
-                (error)=>{
-                if(error) reject(error);
+                function (error){
+                    if(error) {
+                        reject(error);
+                    }
+                    resolve();
                 });
         }));
     }

@@ -9,8 +9,8 @@ module.exports = class RabbitMQAmqpProvider {
 
     static checkConfiguration(application){
         if(application.amqp != null && application.amqp.rabbitmq != null) {
-            if (application.amqp.rabbitmq.connection_string == null) {
-                this.logger.warn("Amqp Connection String not set.");
+            if (!application.amqp.rabbitmq.connection_string) {
+                console.error("[RabbitMQ Setup] - Amqp Connection String not set.");
                 return false;
             }
             return true;
@@ -104,25 +104,30 @@ module.exports = class RabbitMQAmqpProvider {
         const {application} = this;
         const binds = application.amqp.rabbitmq.bindings;
 
-        const connection = await amqp.connect(application.amqp.rabbitmq.connection_string);
-        let channel;
+        const connection = await amqp.connect(application.amqp.rabbitmq.connection_string)
+            .catch((err)=>{
+                this.logger.error(`[RabbitMQ Setup] - Cannot connect to [${application.amqp.rabbitmq.connection_string}]`);
+            });
+        if(connection == null) return;
 
+        let channel;
+        if (application.amqp.verbose) this.logger.debug("[RabbitMQ Setup] - Starting...");
         for (const bind of binds) {
             channel = await connection.createChannel();
             try{
                 //Check if exchange exist
                 await channel.checkExchange(bind.exchange.name);
                 await channel.deleteExchange(bind.exchange.name);
-                if (application.amqp.verbose) this.logger.debug(`[${bind.exchange.name}] - Exchange already exist. Deleting...`);
+                if (application.amqp.verbose) this.logger.debug(`[RabbitMQ Setup] - [${bind.exchange.name}] - Exchange already exist. Deleting...`);
             }catch (e) {
                 //When exchange dont exist the channel is closed
                 //Here we create another channel to create an exchange on finally
-                if (application.amqp.verbose) this.logger.debug(`[${bind.exchange.name}] - Exchange not exist.`);
+                if (application.amqp.verbose) this.logger.debug(`[RabbitMQ Setup] - [${bind.exchange.name}] - Exchange not exist.`);
                 channel = await connection.createChannel();
             }finally {
                 //Create exchange
                 await channel.assertExchange(bind.exchange.name, bind.exchange.type, bind.exchange.options);
-                if (application.amqp.verbose) this.logger.debug(`[${bind.exchange.name}] - Creating Exchange...`);
+                if (application.amqp.verbose) this.logger.debug(`[RabbitMQ Setup] - [${bind.exchange.name}] - Creating Exchange...`);
             }
             await channel.close();
 
@@ -132,24 +137,24 @@ module.exports = class RabbitMQAmqpProvider {
                     //Check if a queue exist
                     await channel.checkQueue(queue.name);
                     await channel.deleteQueue(queue.name);
-                    if (application.amqp.verbose) this.logger.debug(`[${queue.name}] - Queue already exist. Deleting...`);
+                    if (application.amqp.verbose) this.logger.debug(`[RabbitMQ Setup] - [${queue.name}] - Queue already exist. Deleting...`);
                 }catch (e) {
                     //When queue dont exist the channel is closed
                     //Here we create another channel to create a queue on finally
-                    if (application.amqp.verbose) this.logger.debug(`[${queue.name}] - Queue not exist.`);
+                    if (application.amqp.verbose) this.logger.debug(`[RabbitMQ Setup] - [${queue.name}] - Queue not exist.`);
                     channel = await connection.createChannel();
                 }finally {
                     //Create Queue
                     await channel.assertQueue(queue.name, queue.options);
-                    if (application.amqp.verbose) this.logger.debug(`[${queue.name}] - Creating Queue...`);
+                    if (application.amqp.verbose) this.logger.debug(`[RabbitMQ Setup] - [${queue.name}] - Creating Queue...`);
                     await channel.bindQueue(queue.name, bind.exchange.name, queue.routingKey);
-                    if (application.amqp.verbose && queue.routingKey) this.logger.debug(`[${queue.name}] - Binding with exchange - [${bind.exchange.name}] with RoutingKey [${queue.routingKey}]...`);
-                    else this.logger.debug(`[${queue.name}] - Binding with exchange - [${bind.exchange.name}] ...`);
+                    if (application.amqp.verbose && queue.routingKey) this.logger.debug(`[RabbitMQ Setup] - [${queue.name}] - Binding with exchange - [${bind.exchange.name}] with RoutingKey [${queue.routingKey}]...`);
+                    else this.logger.debug(`[RabbitMQ Setup] - [${queue.name}] - Binding with exchange - [${bind.exchange.name}] ...`);
                 }
                 await channel.close();
             }
         }
-        if (application.amqp.verbose) this.logger.debug("[RabbitMQ Setup] - Everything ok");
+        if (application.amqp.verbose) this.logger.debug("[RabbitMQ Setup] - Finishing...");
     }
 
 }

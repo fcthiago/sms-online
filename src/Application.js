@@ -18,6 +18,7 @@ module.exports = {
                     queues : [
                         {
                             name: "x-message-created.q-message-created",
+                            routingKey: "created",
                             options: {
                                 durable: true,
                             },
@@ -33,14 +34,13 @@ module.exports = {
                     topic : {
                         name : "x-message-created",
                         options: {
-
                         },
                     },
                     subscriptions : [
                         {
                             name: "x-message-created.q-message-created",
+                            routingKey: "created",
                             options: {
-                                durable: true,
                             },
                         },
                     ]
