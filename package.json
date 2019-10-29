@@ -8,7 +8,7 @@
     "start": "node bin/start.js"
   },
   "keywords": [],
-  "author": "Bruno do Brasil",
+  "author": "Thiago Ferreira",
   "license": "ISC",
   "dependencies": {
     "awilix": "^4.2.2",
