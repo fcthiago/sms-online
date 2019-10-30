@@ -26,6 +26,7 @@ describe('GET /', function() {
                 const doc = response.body;
                 assert.equal(doc.status_code, 200);
                 assert.equal(doc.company, "My Company LTDA");
+                assert.equal(doc.address, "Rua do infinito e alem");
                 assert.equal(doc.message, "Testando o pipeline");
 
                 return done();
