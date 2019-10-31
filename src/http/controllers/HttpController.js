@@ -17,7 +17,7 @@ module.exports = class HttpController {
                     "status_code": 200,
                     "message": "Testando o pipeline",
                     "company": "My Company LTDA",
-                    "address": "Rua A"
+                    "address": "Rua B"
                 }).end()
             } catch (error) {
                 next(error)
