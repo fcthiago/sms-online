@@ -1,26 +1,26 @@
 {
-  "name": "sms-online",
-  "version": "1.4.0",
-  "description": "Aplicação de teste e treinamento",
-  "main": "index.js",
-  "scripts": {
-    "test": "./node_modules/.bin/_mocha ./test/**/*Test.js --exit",
-    "start": "node start.js"
-  },
-  "keywords": [],
-  "author": "Thiago Ferreira",
-  "license": "ISC",
-  "dependencies": {
-    "awilix": "^4.2.2",
-    "body-parser": "^1.19.0",
-    "cookie-parser": "^1.4.4",
-    "express": "^4.17.1",
-    "log4js": "^5.1.0",
-    "morgan": "^1.9.1"
-  },
-  "devDependencies": {
-    "chai": "^4.2.0",
-    "mocha": "^6.2.2",
-    "supertest": "^4.0.2"
-  }
+    "name": "sms-online",
+    "version": "1.6.0",
+    "description": "Aplicação de teste e treinamento",
+    "main": "index.js",
+    "scripts": {
+        "test": "./node_modules/.bin/_mocha ./test/**/*Test.js --exit",
+        "start": "node start.js"
+    },
+    "keywords": [],
+    "author": "Thiago Ferreira",
+    "license": "ISC",
+    "dependencies": {
+        "awilix": "^4.2.2",
+        "body-parser": "^1.19.0",
+        "cookie-parser": "^1.4.4",
+        "express": "^4.17.1",
+        "log4js": "^5.1.0",
+        "morgan": "^1.9.1"
+    },
+    "devDependencies": {
+        "chai": "^4.2.0",
+        "mocha": "^6.2.2",
+        "supertest": "^4.0.2"
+    }
 }
